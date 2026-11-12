@@ -1,178 +1,94 @@
 # E-Commerce Sales Forecasting Pipeline
 
-An end-to-end data pipeline for forecasting 30-day online retail sales using real transactional data. Built with Apache Airflow, Facebook Prophet, MongoDB Atlas, Docker, and Flask — and deployed on Render for live dashboarding.
+A collaborative data pipeline project for preparing historical online retail transactions, generating a 30-day revenue forecast and presenting the output through a Flask and Plotly dashboard.
 
----
-
-## Table of Contents
-
-- [Overview](#overview)
-- [Tech Stack](#tech-stack)
-- [Architecture](#architecture)
-- [Setup Instructions](#setup-instructions)
-- [Pipeline Flow](#pipeline-flow)
-- [Model Details](#model-details)
-- [Dashboard Features](#dashboard-features)
-- [Cloud Deployment](#cloud-deployment)
-- [Screenshots](#screenshots)
-- [Future Improvements](#future-improvements)
-
----
-
-## Overview
-
-This project solves the problem of short-term demand forecasting for online retailers. It forecasts total daily revenue for the next 30 days, using historical sales data, and delivers interactive visual insights through a deployed dashboard.
-
----
-
-## Tech Stack
-
-| Layer         | Technology                            |
-|--------------|----------------------------------------|
-| Orchestration | Apache Airflow (Dockerized)           |
-| Data Storage  | MongoDB Atlas (Cloud NoSQL)           |
-| Forecasting   | Facebook Prophet                      |
-| Dashboard     | Flask + Plotly                        |
-| Deployment    | Docker Compose + Render               |
-| DevOps        | .env secrets + GitHub CI ready        |
-
----
+The project combines Apache Airflow, Python, Prophet, MongoDB Atlas and Docker. Contributions are listed by area in the authors section.
 
 ## Architecture
 
-```text
-[CSV File] 
-   ↓
-[ETL & Aggregation (Python + Airflow)]
-   ↓
-[Cleaned Data → MongoDB Atlas]
-   ↓
-[Forecast using Prophet]
-   ↓
-[Predictions CSV → Flask App (Render)]
-   ↓
-[Interactive Dashboard (Plotly)]
+```mermaid
+flowchart TD
+    D[Historical transaction data] --> A[Airflow ingestion and aggregation]
+    A --> M[(MongoDB Atlas)]
+    M --> F[Prophet forecast]
+    F --> C[Forecast output]
+    C --> W[Flask application]
+    W --> P[Plotly dashboard]
 ```
 
----
+## Components
 
-## Setup Instructions
+| Layer | Technology | Responsibility |
+|---|---|---|
+| Orchestration | Apache Airflow | Schedule and coordinate data tasks |
+| Storage | MongoDB Atlas | Store transaction and aggregated data |
+| Forecasting | Prophet | Generate a 30-day forecast from daily revenue |
+| Dashboard | Flask, Plotly | Present forecast data and interactive charts |
+| Local environment | Docker Compose | Run the application services |
+
+## Pipeline flow
+
+1. Ingest historical transaction data.
+2. Prepare and aggregate daily revenue.
+3. Fit the forecasting model and generate a 30-day horizon.
+4. Persist or export forecast output.
+5. Render the forecast and available filters in the dashboard.
+
+## Local setup
 
 ### Prerequisites
 
-- Python 3.8+
-- Docker & Docker Compose
-- MongoDB Atlas account
-- Render account (for deployment)
+- Docker and Docker Compose
+- Python version compatible with the project dependencies
+- A MongoDB connection string for a database you control
 
-### Clone Repository
-
-```bash
-git clone 
-cd ecommerce-forecasting-pipeline
-```
-
-### Setup Environment
-
-Create a `.env` file in root directory:
-
-```env
-MONGO_URI=mongodb+srv://Saikiran_ML:tech@cluster0.ay5okke.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
-```
-
-### Start Services Locally
+### Clone
 
 ```bash
-docker-compose up --build
+git clone https://github.com/sunkaradp/ecommerce-sales-forecasting-pipeline.git
+cd ecommerce-sales-forecasting-pipeline
 ```
 
-Access Airflow UI at: `http://localhost:8080`  
-Access Dashboard at: `http://localhost:5000`
+### Configure environment
 
----
+Create a local `.env` file. Do not commit it.
 
-## Pipeline Flow
-
-1. CSV data is ingested into MongoDB
-2. Daily revenue aggregated per day
-3. Prophet forecasts 30 days of future revenue
-4. Results saved to `prediction.csv`
-5. Dashboard reads this file and renders it with filters & KPIs
-
----
-
-## Model Details
-
-- Model: Facebook Prophet
-- Input: Aggregated daily revenue
-- Horizon: 30-day future forecast
-- Output: `ds`, `yhat`, `yhat_lower`, `yhat_upper`
-
----
-
-## Dashboard Features
-
-- Line chart of predicted sales
-- Dropdown filters for Country & Product (if present)
-- KPI cards for total sales
-- Hover tooltips with confidence intervals
-- Download forecast data as CSV
-
----
-
-## Cloud Deployment
-
-### MongoDB Atlas
-
-- Cloud-hosted NoSQL database
-- Stores both raw transactions and aggregated data
-- Connection handled via MONGO_URI in `.env`
-
-### Render (Flask Dashboard)
-
-- Deployed from GitHub via render.yaml
-- Auto-deploys on commit
-- Environment variables securely configured in dashboard
-
-```yaml
-services:
-  - type: web
-    name: ecommerce-dashboard
-    env: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app
-    envVars:
-      - key: MONGO_URI
-        value: mongodb+srv://Saikiran_ML:tech@cluster0.ay5okke.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
-
+```dotenv
+MONGO_URI=<your-mongodb-connection-string>
 ```
 
----
+Provide the same value through the deployment platform's encrypted environment-variable settings. The repository's Render Blueprint declares `MONGO_URI` as a value that must be configured outside source control.
 
-## Future Improvements
+### Start services
 
-- Add holiday regressors to Prophet
-- Move from batch to real-time with Kafka & Spark Streaming
-- Auto-retrain model daily using CI/CD
-- Add role-based login for dashboard
+```bash
+docker compose up --build
+```
 
----
+The original project configuration documents the Airflow UI at `http://localhost:8080` and the dashboard at `http://localhost:5000`. Confirm the ports against the current Compose configuration before use.
 
-## Authors
+## Forecast output
 
-- Harsha Vijaya Kumar – Airflow DAGs, project documentation, deployment
-- Saikiran Magadi Lakshmeesha – ETL pipelines, Flask dashboard
-- Durgaprasad Sunkara – Docker orchestration, MongoDB integration
-- Supreetha Devagiri – ML modeling with Prophet, hyperparameter tuning
+The documented forecast uses Prophet with a 30-day horizon. The expected output fields are:
 
----
+- `ds`: forecast date
+- `yhat`: point forecast
+- `yhat_lower`: lower uncertainty bound
+- `yhat_upper`: upper uncertainty bound
+
+No model accuracy or throughput figures are stated here because reproducible evaluation results are not included in this README.
+
+## Contributions
+
+- Harsha Vijaya Kumar — Airflow DAGs, project documentation and deployment
+- Saikiran Magadi Lakshmeesha — ETL pipelines and Flask dashboard
+- Durgaprasad Sunkara — Docker orchestration and MongoDB integration
+- Supreetha Devagiri — Prophet modeling and hyperparameter tuning
+
+## Security note
+
+Credentials must be supplied through local environment files or the deployment platform's secret configuration. If a credential has ever been committed, changing the current file is not sufficient: rotate the credential at the provider and review repository history and deployment logs.
 
 ## License
 
 [MIT License](https://mit-license.org/)
-
----
-
-## Contact
-
-Have questions or suggestions? Feel free to contact us via GitHub or email.
