@@ -10,5 +10,5 @@ services:
       - key: PORT
         value: 4500
       - key: MONGO_URI
-        value: mongodb+srv://Saikiran_ML:tech@cluster0.ay5okke.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0 # Replace this with actual value or configure via Render UI
+        sync: false
     autoDeploy: true
